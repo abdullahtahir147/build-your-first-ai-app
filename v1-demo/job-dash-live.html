@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Dash V1 — Live HackerNews Jobs</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #08090a;
+            --surface: #111214;
+            --surface2: #191b1f;
+            --border: #25282e;
+            --text: #dcdee3;
+            --muted: #6b7280;
+            --blue: #3b82f6;
+            --blue-dim: #3b82f615;
+            --green: #10b981;
+            --green-dim: #10b98115;
+            --amber: #f59e0b;
+            --amber-dim: #f59e0b15;
+            --orange: #ff6b35;
+            --orange-dim: #ff6b3515;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .app { max-width: 700px; margin: 0 auto; }
+
+        h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.15rem; }
+        .version-badge {
+            display: inline-block;
+            background: var(--orange-dim);
+            color: var(--orange);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .tagline { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+        .pull-section {
+            background: linear-gradient(135deg, #111a2e, #111214);
+            border: 1px solid #1e3a5f;
+            border-radius: 14px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pull-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .pull-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .pull-subtitle {
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .pull-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 0.65rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .search-input:focus { border-color: var(--blue); }
+
+        .pull-btn {
+            padding: 0.65rem 1.2rem;
+            background: var(--blue);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            white-space: nowrap;
+        }
+
+        .pull-btn:hover { opacity: 0.85; }
+        .pull-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .pull-btn.loading { position: relative; color: transparent; }
+        .pull-btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 16px; height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid #fff4;
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .status-bar {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .status-bar .count { color: var(--green); font-weight: 600; }
+
+        .results { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .job-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            animation: fadeIn 0.25s ease-out;
+            transition: border-color 0.15s;
+        }
+
+        .job-card:hover { border-color: #3a3d44; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .job-company {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--blue);
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .job-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .job-text a { color: var(--blue); }
+
+        .job-meta {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .tag-remote { background: var(--green-dim); color: var(--green); }
+        .tag-onsite { background: var(--amber-dim); color: var(--amber); }
+        .tag-new { background: var(--orange-dim); color: var(--orange); }
+
+        .save-job-btn {
+            margin-left: auto;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--muted);
+            padding: 0.3rem 0.7rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.15s;
+        }
+
+        .save-job-btn:hover { color: var(--green); border-color: var(--green); }
+        .save-job-btn.saved { color: var(--green); border-color: var(--green); background: var(--green-dim); }
+
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--muted);
+        }
+
+        .empty-state .emoji { font-size: 2rem; margin-bottom: 0.75rem; }
+
+        .saved-section {
+            margin-top: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem;
+        }
+
+        .saved-header {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--green);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .saved-job {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            gap: 0.75rem;
+        }
+
+        .saved-job:last-child { border-bottom: none; }
+
+        .saved-job-text {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .saved-job-company {
+            font-size: 0.7rem;
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #444;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        .remove-btn:hover { color: #ef4444; }
+
+        .how-it-works {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--surface);
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .how-it-works strong { color: var(--text); }
+
+        .workshop-badge {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: #333;
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 500px) {
+            .pull-controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <h1>Job Dash <span class="version-badge">V1 — Live Data</span></h1>
+        <p class="tagline">Now pulling real jobs from HackerNews "Who's Hiring"</p>
+
+        <div class="pull-section">
+            <div class="pull-header">
+                <span class="pull-title">🔍 Search Live Jobs</span>
+            </div>
+            <p class="pull-subtitle">Pulls from the latest HN "Who's Hiring" thread — real companies, real listings, no API key needed.</p>
+            <div class="pull-controls">
+                <input class="search-input" id="searchTerm" placeholder="e.g. London, Python, remote, frontend..." value="London">
+                <button class="pull-btn" id="pullBtn" onclick="fetchJobs()">Pull Jobs</button>
+            </div>
+            <div class="status-bar" id="statusBar"></div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="empty-state">
+                <div class="emoji">🌐</div>
+                <p>Hit "Pull Jobs" to fetch live listings from HackerNews</p>
+            </div>
+        </div>
+
+        <div class="saved-section" id="savedSection" style="display: none;">
+            <div class="saved-header">⭐ Saved Jobs</div>
+            <div id="savedList"></div>
+        </div>
+
+        <div class="how-it-works">
+            <strong>How this works under the hood:</strong><br>
+            This app calls the free HackerNews API (no key needed, no signup) to find the latest "Who's Hiring" post, then fetches all the comments (each one is a job listing). It filters them by your search term and displays the results. The whole thing is ~50 lines of JavaScript in a single HTML file.<br><br>
+            <strong>What you could automate next:</strong> Run this fetch on a schedule (a "cron job") so new jobs appear in your tracker every morning without you lifting a finger.
+        </div>
+
+        <div class="workshop-badge">
+            Built at Build Your First AI App — Kennington<br>
+            V1: From local tool → live internet data
+        </div>
+    </div>
+
+    <script>
+        let savedJobs = JSON.parse(localStorage.getItem('jobdash_v1_saved') || '[]');
+
+        function save() {
+            localStorage.setItem('jobdash_v1_saved', JSON.stringify(savedJobs));
+        }
+
+        async function fetchJobs() {
+            const btn = document.getElementById('pullBtn');
+            const status = document.getElementById('statusBar');
+            const term = document.getElementById('searchTerm').value.trim().toLowerCase();
+
+            if (!term) return;
+
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.textContent = 'Pulling...';
+            status.innerHTML = 'Searching HackerNews for the latest "Who\'s Hiring" thread...';
+
+            try {
+                // Step 1: Find the latest "Who's Hiring" thread
+                const searchRes = await fetch(
+                    'https://hn.algolia.com/api/v1/search?query=%22who%20is%20hiring%22&tags=story,ask_hn&hitsPerPage=5'
+                );
+                const searchData = await searchRes.json();
+
+                // Find the most recent "Who is hiring" post
+                const hiringPost = searchData.hits.find(h =>
+                    h.title.toLowerCase().includes('who is hiring')
+                );
+
+                if (!hiringPost) {
+                    status.innerHTML = 'Could not find a recent "Who is Hiring" thread.';
+                    return;
+                }
+
+                status.innerHTML = `Found: <strong>${hiringPost.title}</strong> — now fetching job listings...`;
+
+                // Step 2: Fetch the comments (job listings)
+                const commentsRes = await fetch(
+                    `https://hn.algolia.com/api/v1/items/${hiringPost.objectID}`
+                );
+                const commentsData = await commentsRes.json();
+
+                // Step 3: Filter by search term
+                const allJobs = commentsData.children || [];
+                const matched = allJobs.filter(c =>
+                    c.text && c.text.toLowerCase().includes(term)
+                );
+
+                status.innerHTML = `Found <span class="count">${matched.length}</span> listings matching "${term}" from ${allJobs.length} total posts in <strong>${hiringPost.title}</strong>`;
+
+                renderResults(matched, term);
+
+            } catch (err) {
+                status.innerHTML = `Error: ${err.message}. Make sure you're connected to the internet.`;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btn.textContent = 'Pull Jobs';
+            }
+        }
+
+        function extractCompany(html) {
+            // First line usually starts with company name
+            const text = html.replace(/<[^>]+>/g, ' ').trim();
+            const firstLine = text.split('\n')[0].trim();
+            // Often format: "Company | Role | Location | ..."
+            const parts = firstLine.split(/[|–—]/);
+            if (parts.length > 0) {
+                return parts[0].trim().substring(0, 60);
+            }
+            return 'Unknown Company';
+        }
+
+        function detectTags(text) {
+            const tags = [];
+            const lower = text.toLowerCase();
+            if (lower.includes('remote')) tags.push({ label: 'Remote', cls: 'tag-remote' });
+            if (lower.includes('onsite') || lower.includes('on-site') || lower.includes('in-office')) tags.push({ label: 'On-site', cls: 'tag-onsite' });
+            if (lower.includes('visa')) tags.push({ label: 'Visa OK', cls: 'tag-new' });
+            return tags;
+        }
+
+        function truncateHTML(html, maxLen) {
+            const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+            if (text.length <= maxLen) return text;
+            return text.substring(0, maxLen) + '...';
+        }
+
+        function renderResults(jobs, term) {
+            const container = document.getElementById('results');
+
+            if (jobs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">🔍</div>
+                        <p>No jobs matched "${term}". Try a different search term.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = jobs.slice(0, 50).map((job, i) => {
+                const company = extractCompany(job.text || '');
+                const preview = truncateHTML(job.text || '', 300);
+                const tags = detectTags(job.text || '');
+                const isSaved = savedJobs.some(s => s.id === job.id);
+                const jobData = encodeURIComponent(JSON.stringify({ id: job.id, company, preview: preview.substring(0, 150) }));
+
+                return `
+                    <div class="job-card">
+                        <div class="job-company">${company}</div>
+                        <div class="job-text">${preview}</div>
+                        <div class="job-meta">
+                            ${tags.map(t => `<span class="meta-tag ${t.cls}">${t.label}</span>`).join('')}
+                            <a href="https://news.ycombinator.com/item?id=${job.id}" target="_blank" style="font-size:0.75rem; color: var(--blue); text-decoration: none;">View on HN →</a>
+                            <button class="save-job-btn ${isSaved ? 'saved' : ''}"
+                                onclick="toggleSave(${job.id}, '${company.replace(/'/g, "\\'")}', '${preview.substring(0, 120).replace(/'/g, "\\'")}')">
+                                ${isSaved ? '★ Saved' : '☆ Save'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderSaved();
+        }
+
+        function toggleSave(id, company, preview) {
+            const exists = savedJobs.findIndex(j => j.id === id);
+            if (exists > -1) {
+                savedJobs.splice(exists, 1);
+            } else {
+                savedJobs.push({ id, company, preview, savedAt: new Date().toLocaleDateString() });
+            }
+            save();
+            // Re-render save buttons
+            document.querySelectorAll('.save-job-btn').forEach(btn => {
+                // Refresh the whole results to update button state
+            });
+            renderSaved();
+
+            // Update button states inline
+            document.querySelectorAll('.save-job-btn').forEach(btn => {
+                const onclick = btn.getAttribute('onclick');
+                const match = onclick.match(/toggleSave\((\d+)/);
+                if (match) {
+                    const btnId = parseInt(match[1]);
+                    const isSaved = savedJobs.some(s => s.id === btnId);
+                    btn.className = `save-job-btn ${isSaved ? 'saved' : ''}`;
+                    btn.textContent = isSaved ? '★ Saved' : '☆ Save';
+                }
+            });
+        }
+
+        function removeSaved(id) {
+            savedJobs = savedJobs.filter(j => j.id !== id);
+            save();
+            renderSaved();
+        }
+
+        function renderSaved() {
+            const section = document.getElementById('savedSection');
+            const list = document.getElementById('savedList');
+
+            if (savedJobs.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = savedJobs.map(j => `
+                <div class="saved-job">
+                    <div>
+                        <div class="saved-job-company">${j.company}</div>
+                        <div class="saved-job-text">${j.preview}</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeSaved(${j.id})">×</button>
+                </div>
+            `).join('');
+        }
+
+        // Keyboard shortcut
+        document.getElementById('searchTerm').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchJobs();
+        });
+
+        renderSaved();
+    </script>
+</body>
+</html>

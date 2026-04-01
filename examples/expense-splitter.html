@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split It — Expense Splitter</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --border: #222;
+            --text: #e8e8e8;
+            --muted: #777;
+            --accent: #00e676;
+            --accent-dim: #00e67620;
+            --danger: #ff5252;
+            --danger-dim: #ff525220;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .app {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.8rem;
+            margin-bottom: 0.25rem;
+            letter-spacing: -1px;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .tagline {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .bill-input-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .currency-sign {
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
+            color: var(--muted);
+        }
+
+        .bill-amount {
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
+            background: none;
+            border: none;
+            color: var(--text);
+            width: 100%;
+            outline: none;
+        }
+
+        .bill-amount::placeholder { color: #333; }
+
+        .tip-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .tip-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tip-btn:hover { border-color: var(--accent); color: var(--text); }
+        .tip-btn.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .tip-custom {
+            width: 60px;
+            text-align: center;
+            padding: 0.6rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .tip-custom:focus { border-color: var(--accent); }
+
+        .people-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .add-btn {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: opacity 0.15s;
+        }
+
+        .add-btn:hover { opacity: 0.8; }
+
+        .person {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            animation: slideIn 0.2s ease-out;
+        }
+
+        .person:last-child { border-bottom: none; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .person-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .person-name {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .person-name::placeholder { color: #444; }
+
+        .person-share {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--accent);
+            min-width: 70px;
+            text-align: right;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #444;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.25rem;
+            transition: color 0.15s;
+        }
+
+        .remove-btn:hover { color: var(--danger); }
+
+        .split-toggle {
+            display: flex;
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .split-option {
+            flex: 1;
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--muted);
+            transition: all 0.15s;
+            border: none;
+            background: none;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .split-option.active {
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .custom-amount {
+            width: 70px;
+            text-align: right;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.3rem 0.5rem;
+            color: var(--accent);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .custom-amount:focus { border-color: var(--accent); }
+
+        .summary {
+            background: linear-gradient(135deg, #0d1f0d, #0a0a0a);
+            border: 1px solid #1a3a1a;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+        }
+
+        .summary-row.total {
+            border-top: 1px solid var(--border);
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .summary-row .label { color: var(--muted); }
+        .summary-row .value { font-family: 'Space Mono', monospace; }
+        .summary-row.total .value { color: var(--accent); }
+
+        .remaining-warning {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .remaining-warning.show { display: block; }
+
+        .reset-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--danger-dim);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: opacity 0.15s;
+        }
+
+        .reset-btn:hover { opacity: 0.8; }
+
+        .workshop-badge {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: #333;
+            font-size: 0.75rem;
+        }
+
+        .workshop-badge a { color: #555; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="logo">split<span>.</span>it</div>
+        <p class="tagline">Split bills fairly. No arguments.</p>
+
+        <div class="section">
+            <div class="section-label">Bill Total</div>
+            <div class="bill-input-row">
+                <span class="currency-sign">£</span>
+                <input type="number" class="bill-amount" id="billAmount" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="section-label" style="margin-top: 1rem;">Tip</div>
+            <div class="tip-row">
+                <button class="tip-btn" data-tip="0">None</button>
+                <button class="tip-btn" data-tip="10">10%</button>
+                <button class="tip-btn" data-tip="15">15%</button>
+                <button class="tip-btn active" data-tip="20">20%</button>
+                <input type="number" class="tip-custom" id="customTip" placeholder="%" min="0" max="100">
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="people-header">
+                <div class="section-label" style="margin-bottom: 0;">People</div>
+                <button class="add-btn" id="addPerson">+ Add</button>
+            </div>
+            <div class="split-toggle">
+                <button class="split-option active" data-mode="equal">Split Equally</button>
+                <button class="split-option" data-mode="custom">Custom Amounts</button>
+            </div>
+            <div id="peopleList"></div>
+            <div class="remaining-warning" id="remainingWarning"></div>
+        </div>
+
+        <div class="section summary" id="summary" style="display: none;">
+            <div class="section-label">Summary</div>
+            <div class="summary-row">
+                <span class="label">Subtotal</span>
+                <span class="value" id="subtotal">£0.00</span>
+            </div>
+            <div class="summary-row">
+                <span class="label">Tip</span>
+                <span class="value" id="tipAmount">£0.00</span>
+            </div>
+            <div class="summary-row total">
+                <span class="label">Total</span>
+                <span class="value" id="totalAmount">£0.00</span>
+            </div>
+        </div>
+
+        <button class="reset-btn" onclick="resetAll()">Reset Everything</button>
+
+        <div class="workshop-badge">
+            Built at Build Your First AI App — Kennington
+        </div>
+    </div>
+
+    <script>
+        const avatarColors = [
+            '#e91e63', '#9c27b0', '#3f51b5', '#009688',
+            '#ff9800', '#795548', '#607d8b', '#f44336',
+            '#4caf50', '#ff5722', '#2196f3', '#ffc107'
+        ];
+
+        let people = [
+            { id: 1, name: 'You', customAmount: '' },
+            { id: 2, name: '', customAmount: '' }
+        ];
+        let nextId = 3;
+        let tipPercent = 20;
+        let splitMode = 'equal';
+
+        function getInitials(name) {
+            if (!name) return '?';
+            return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+        }
+
+        function getColor(id) {
+            return avatarColors[id % avatarColors.length];
+        }
+
+        function calculate() {
+            const bill = parseFloat(document.getElementById('billAmount').value) || 0;
+            const tip = bill * (tipPercent / 100);
+            const total = bill + tip;
+
+            document.getElementById('subtotal').textContent = `£${bill.toFixed(2)}`;
+            document.getElementById('tipAmount').textContent = `£${tip.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `£${total.toFixed(2)}`;
+            document.getElementById('summary').style.display = bill > 0 ? 'block' : 'none';
+
+            if (splitMode === 'equal') {
+                const perPerson = people.length > 0 ? total / people.length : 0;
+                document.querySelectorAll('.person-share').forEach(el => {
+                    el.textContent = `£${perPerson.toFixed(2)}`;
+                });
+            } else {
+                let assigned = 0;
+                people.forEach(p => {
+                    assigned += parseFloat(p.customAmount) || 0;
+                });
+                const remaining = total - assigned;
+                const warning = document.getElementById('remainingWarning');
+                if (Math.abs(remaining) > 0.01 && bill > 0) {
+                    warning.classList.add('show');
+                    warning.textContent = remaining > 0
+                        ? `£${remaining.toFixed(2)} still unassigned`
+                        : `£${Math.abs(remaining).toFixed(2)} over-assigned`;
+                } else {
+                    warning.classList.remove('show');
+                }
+            }
+        }
+
+        function renderPeople() {
+            const list = document.getElementById('peopleList');
+            list.innerHTML = '';
+
+            people.forEach((person, index) => {
+                const div = document.createElement('div');
+                div.className = 'person';
+
+                const bill = parseFloat(document.getElementById('billAmount').value) || 0;
+                const tip = bill * (tipPercent / 100);
+                const total = bill + tip;
+                const perPerson = people.length > 0 ? total / people.length : 0;
+
+                div.innerHTML = `
+                    <div class="person-avatar" style="background: ${getColor(person.id)}20; color: ${getColor(person.id)}">
+                        ${getInitials(person.name || `P${index + 1}`)}
+                    </div>
+                    <input class="person-name" placeholder="Name" value="${person.name}"
+                        data-id="${person.id}" onchange="updateName(${person.id}, this.value)">
+                    ${splitMode === 'equal'
+                        ? `<span class="person-share">£${perPerson.toFixed(2)}</span>`
+                        : `<input class="custom-amount" type="number" placeholder="0.00" step="0.01"
+                            value="${person.customAmount}" onchange="updateCustom(${person.id}, this.value)">`
+                    }
+                    ${people.length > 1
+                        ? `<button class="remove-btn" onclick="removePerson(${person.id})">×</button>`
+                        : ''
+                    }
+                `;
+                list.appendChild(div);
+            });
+
+            calculate();
+        }
+
+        function updateName(id, name) {
+            const person = people.find(p => p.id === id);
+            if (person) {
+                person.name = name;
+                renderPeople();
+            }
+        }
+
+        function updateCustom(id, amount) {
+            const person = people.find(p => p.id === id);
+            if (person) {
+                person.customAmount = amount;
+                calculate();
+            }
+        }
+
+        function removePerson(id) {
+            people = people.filter(p => p.id !== id);
+            renderPeople();
+        }
+
+        document.getElementById('addPerson').addEventListener('click', () => {
+            people.push({ id: nextId++, name: '', customAmount: '' });
+            renderPeople();
+        });
+
+        document.getElementById('billAmount').addEventListener('input', calculate);
+
+        document.querySelectorAll('.tip-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                tipPercent = parseInt(btn.dataset.tip);
+                document.getElementById('customTip').value = '';
+                calculate();
+                renderPeople();
+            });
+        });
+
+        document.getElementById('customTip').addEventListener('input', (e) => {
+            document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+            tipPercent = parseFloat(e.target.value) || 0;
+            calculate();
+            renderPeople();
+        });
+
+        document.querySelectorAll('.split-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.split-option').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                splitMode = btn.dataset.mode;
+                renderPeople();
+            });
+        });
+
+        function resetAll() {
+            document.getElementById('billAmount').value = '';
+            tipPercent = 20;
+            document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-tip="20"]').classList.add('active');
+            document.getElementById('customTip').value = '';
+            people = [
+                { id: 1, name: 'You', customAmount: '' },
+                { id: 2, name: '', customAmount: '' }
+            ];
+            nextId = 3;
+            splitMode = 'equal';
+            document.querySelectorAll('.split-option').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-mode="equal"]').classList.add('active');
+            renderPeople();
+        }
+
+        renderPeople();
+    </script>
+</body>
+</html>

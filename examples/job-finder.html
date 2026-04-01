@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Dash — Your Job Search Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #08090a;
+            --surface: #111214;
+            --surface2: #191b1f;
+            --border: #25282e;
+            --text: #dcdee3;
+            --muted: #6b7280;
+            --blue: #3b82f6;
+            --blue-dim: #3b82f615;
+            --green: #10b981;
+            --green-dim: #10b98115;
+            --amber: #f59e0b;
+            --amber-dim: #f59e0b15;
+            --red: #ef4444;
+            --red-dim: #ef444415;
+            --purple: #8b5cf6;
+            --purple-dim: #8b5cf615;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .app { max-width: 700px; margin: 0 auto; }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .tagline { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 500;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-top: 0.2rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.65rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .search-input:focus { border-color: var(--blue); }
+
+        .filter-btn {
+            padding: 0.65rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--muted);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .filter-btn:hover { border-color: var(--blue); color: var(--text); }
+        .filter-btn.active { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+
+        .add-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .add-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .add-row-full {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+        }
+
+        .add-input {
+            padding: 0.6rem 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .add-input:focus { border-color: var(--blue); }
+
+        .add-select {
+            padding: 0.6rem 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .primary-btn {
+            padding: 0.6rem 1.2rem;
+            background: var(--blue);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .primary-btn:hover { opacity: 0.85; }
+
+        .job-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .job-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            transition: border-color 0.15s;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .job-card:hover { border-color: #3a3d44; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .job-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .job-info { flex: 1; min-width: 0; }
+
+        .job-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.15rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .job-company {
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .job-meta {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-saved { background: var(--blue-dim); color: var(--blue); }
+        .status-applied { background: var(--purple-dim); color: var(--purple); }
+        .status-interview { background: var(--amber-dim); color: var(--amber); }
+        .status-offer { background: var(--green-dim); color: var(--green); }
+        .status-rejected { background: var(--red-dim); color: var(--red); }
+
+        .job-date {
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .job-url {
+            font-size: 0.7rem;
+            color: var(--blue);
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+            display: inline-block;
+        }
+
+        .job-url:hover { text-decoration: underline; }
+
+        .job-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--muted);
+            padding: 0.3rem 0.5rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.15s;
+        }
+
+        .action-btn:hover { color: var(--text); border-color: #444; }
+        .action-btn.delete:hover { color: var(--red); border-color: var(--red); }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--muted);
+        }
+
+        .empty-state .emoji { font-size: 2rem; margin-bottom: 0.75rem; }
+
+        .workshop-badge {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: #333;
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 500px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .add-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <h1>Job Dash</h1>
+        <p class="tagline">Track every application. Know where you stand.</p>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--blue)" id="statSaved">0</div>
+                <div class="stat-label">Saved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--purple)" id="statApplied">0</div>
+                <div class="stat-label">Applied</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--amber)" id="statInterview">0</div>
+                <div class="stat-label">Interview</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--green)" id="statOffer">0</div>
+                <div class="stat-label">Offers</div>
+            </div>
+        </div>
+
+        <div class="add-bar">
+            <div class="add-row">
+                <input class="add-input" id="jobTitle" placeholder="Job title">
+                <input class="add-input" id="jobCompany" placeholder="Company">
+            </div>
+            <div class="add-row" style="margin-bottom: 0.5rem;">
+                <input class="add-input" id="jobUrl" placeholder="Link (optional)">
+                <select class="add-select" id="jobStatus">
+                    <option value="saved">Saved</option>
+                    <option value="applied">Applied</option>
+                    <option value="interview">Interview</option>
+                    <option value="offer">Offer</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            <div class="add-row-full">
+                <input class="add-input" id="jobSalary" placeholder="Salary / notes (optional)">
+                <button class="primary-btn" onclick="addJob()">Add Job</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input class="search-input" id="searchInput" placeholder="Search jobs..." oninput="render()">
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+            <button class="filter-btn" data-filter="saved" onclick="setFilter('saved', this)">Saved</button>
+            <button class="filter-btn" data-filter="applied" onclick="setFilter('applied', this)">Applied</button>
+            <button class="filter-btn" data-filter="interview" onclick="setFilter('interview', this)">Interview</button>
+            <button class="filter-btn" data-filter="offer" onclick="setFilter('offer', this)">Offer</button>
+        </div>
+
+        <div class="job-list" id="jobList"></div>
+
+        <div class="workshop-badge">
+            Built at Build Your First AI App — Kennington
+        </div>
+    </div>
+
+    <script>
+        let jobs = JSON.parse(localStorage.getItem('jobdash_jobs') || '[]');
+        let currentFilter = 'all';
+
+        function save() {
+            localStorage.setItem('jobdash_jobs', JSON.stringify(jobs));
+        }
+
+        function addJob() {
+            const title = document.getElementById('jobTitle').value.trim();
+            const company = document.getElementById('jobCompany').value.trim();
+            const url = document.getElementById('jobUrl').value.trim();
+            const status = document.getElementById('jobStatus').value;
+            const salary = document.getElementById('jobSalary').value.trim();
+
+            if (!title || !company) return;
+
+            jobs.unshift({
+                id: Date.now(),
+                title,
+                company,
+                url,
+                status,
+                salary,
+                date: new Date().toISOString().split('T')[0]
+            });
+
+            save();
+            render();
+
+            document.getElementById('jobTitle').value = '';
+            document.getElementById('jobCompany').value = '';
+            document.getElementById('jobUrl').value = '';
+            document.getElementById('jobSalary').value = '';
+            document.getElementById('jobStatus').value = 'saved';
+            document.getElementById('jobTitle').focus();
+        }
+
+        function updateStatus(id, newStatus) {
+            const job = jobs.find(j => j.id === id);
+            if (job) { job.status = newStatus; save(); render(); }
+        }
+
+        function deleteJob(id) {
+            jobs = jobs.filter(j => j.id !== id);
+            save();
+            render();
+        }
+
+        function setFilter(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render();
+        }
+
+        function getCompanyInitials(name) {
+            return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+        }
+
+        const companyColors = {};
+        const palette = ['#e91e63', '#9c27b0', '#3f51b5', '#00897b', '#ef6c00', '#5d4037', '#546e7a', '#d32f2f', '#2e7d32', '#1565c0'];
+        let colorIndex = 0;
+
+        function getCompanyColor(company) {
+            if (!companyColors[company]) {
+                companyColors[company] = palette[colorIndex % palette.length];
+                colorIndex++;
+            }
+            return companyColors[company];
+        }
+
+        function nextStatus(current) {
+            const flow = { saved: 'applied', applied: 'interview', interview: 'offer' };
+            return flow[current] || null;
+        }
+
+        function render() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const list = document.getElementById('jobList');
+
+            let filtered = jobs.filter(j => {
+                const matchesFilter = currentFilter === 'all' || j.status === currentFilter;
+                const matchesSearch = j.title.toLowerCase().includes(search)
+                    || j.company.toLowerCase().includes(search)
+                    || (j.salary && j.salary.toLowerCase().includes(search));
+                return matchesFilter && matchesSearch;
+            });
+
+            // Update stats
+            const counts = { saved: 0, applied: 0, interview: 0, offer: 0, rejected: 0 };
+            jobs.forEach(j => { if (counts.hasOwnProperty(j.status)) counts[j.status]++; });
+            document.getElementById('statSaved').textContent = counts.saved;
+            document.getElementById('statApplied').textContent = counts.applied;
+            document.getElementById('statInterview').textContent = counts.interview;
+            document.getElementById('statOffer').textContent = counts.offer;
+
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">📋</div>
+                        <p>${jobs.length === 0 ? 'Add your first job above to start tracking' : 'No jobs match your search'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = filtered.map(job => {
+                const color = getCompanyColor(job.company);
+                const next = nextStatus(job.status);
+                return `
+                    <div class="job-card">
+                        <div class="job-icon" style="background: ${color}20; color: ${color}">
+                            ${getCompanyInitials(job.company)}
+                        </div>
+                        <div class="job-info">
+                            <div class="job-title">${job.title}</div>
+                            <div class="job-company">${job.company}${job.salary ? ' · ' + job.salary : ''}</div>
+                            <div class="job-meta">
+                                <span class="status-badge status-${job.status}">${job.status}</span>
+                                <span class="job-date">${job.date}</span>
+                                ${job.url ? `<a class="job-url" href="${job.url}" target="_blank">${job.url.replace(/https?:\/\/(www\.)?/, '').split('/')[0]}</a>` : ''}
+                            </div>
+                        </div>
+                        <div class="job-actions">
+                            ${next ? `<button class="action-btn" onclick="updateStatus(${job.id}, '${next}')">→ ${next}</button>` : ''}
+                            ${job.status !== 'rejected' ? `<button class="action-btn" onclick="updateStatus(${job.id}, 'rejected')">✗ Pass</button>` : ''}
+                            <button class="action-btn delete" onclick="deleteJob(${job.id})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('jobTitle').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addJob();
+        });
+
+        render();
+    </script>
+</body>
+</html>
