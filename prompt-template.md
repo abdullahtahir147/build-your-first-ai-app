@@ -1,32 +1,60 @@
-# Prompt Template for ChatGPT
+# Prompt Templates for ChatGPT
 
-Copy everything below the line into ChatGPT. Replace the **[BRACKETED]** parts with your idea.
-
----
-
-## The Prompt
-
-```
-I want to build a simple web app:
-
-**App:** [e.g. "Meal Planner"]
-**What it does:** [e.g. "Lets me pick meals for each day of the week from ingredients I have"]
-**Who it's for:** [e.g. "Me and my flatmates"]
-
-Do two things:
-
-1. Write a mini PRD (max 100 words): one-sentence description, target user, 4–5 features, design vibe.
-
-2. Write a short, direct prompt I can paste into Claude to build this as a **single HTML file**. The prompt must tell Claude to: put all HTML, CSS, and JS in one file; use localStorage to save data; require no API keys or internet; work by double-clicking in a browser; use a clean, modern, mobile-friendly design. Keep it concise — no waffle. Output the Claude prompt only.
-```
+Two prompts. Run them in order. Replace everything in **[BRACKETS]** with your own idea.
 
 ---
 
-## Tips
+## Prompt 1 — Describe your idea, get a PRD
 
-- **Be specific.** "An app that tracks habits" is vague. "An app where I check off 3 daily habits and see a weekly streak" is clear.
-- **Think small.** One page, one purpose. You can always add more later.
-- **Move fast.** Pick an idea and go.
+Paste this into ChatGPT first.
+
+```
+I want to build a simple web app. Here's my idea:
+
+**App name:** [e.g. "Habit Tracker"]
+**What it does:** [e.g. "Lets me check off up to 5 daily habits and shows a weekly streak"]
+**Who it's for:** [e.g. "Just me, for personal use"]
+**Key features I want:** [e.g. "Add/remove habits, check them off each day, see a streak counter"]
+**Design (optional):** [e.g. "Minimal, dark mode, greens and greys"]
+
+I'm going to build this using free Claude AI. The first version will be a single HTML file — all the HTML, CSS, and JavaScript in one file, no backend, no database, no API keys.
+
+Please write me a Product Requirements Document (PRD) that includes:
+- A one-sentence description of the app
+- Who it's for
+- A breakdown of versions: MVP (the absolute minimum that works), V1 (nice to have additions), V2 (future ideas)
+- Any design notes
+
+Keep each version focused and realistic for a single HTML file.
+```
+
+---
+
+**Read the PRD.** Check the MVP scope feels right — not too big, not too small. You can ask ChatGPT to adjust it before moving on.
+
+---
+
+## Prompt 2 — Get the Claude prompt
+
+Once you're happy with the PRD, paste this into the **same ChatGPT conversation**.
+
+```
+Great. Now write me a prompt I can paste directly into Claude (free plan) to build the MVP as a single HTML file.
+
+The prompt must:
+- Be short and direct — free Claude has limited tokens, so no waffle
+- Tell Claude to put all HTML, CSS, and JavaScript in one file
+- Use localStorage to save any data
+- Require no API keys and no internet connection
+- Work by simply double-clicking the file in a browser
+- Match the design vibe from the PRD
+
+Output the Claude prompt only — no explanation, no intro text.
+```
+
+---
+
+**Copy the prompt ChatGPT gives you → open Claude → paste it in → your app is built.**
 
 ---
 
