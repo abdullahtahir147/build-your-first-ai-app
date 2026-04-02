@@ -35,17 +35,35 @@ Open `examples/` → double-click `expense-splitter.html` → it should open and
 
 ## Workshop Flow
 
-**Step 1 → Think (ChatGPT)**
-Open ChatGPT. Copy the prompt from [`prompt-template.md`](prompt-template.md). Fill in your idea. You'll get back a mini PRD and a ready-to-paste Claude prompt.
+**Step 1 → Describe your idea (ChatGPT — Prompt 1)**
+Open ChatGPT. Copy **Prompt 1** from [`prompt-template.md`](prompt-template.md). Fill in your app idea, who it's for, and what you want it to do. ChatGPT will give you back a PRD with an MVP, V1, and V2 breakdown. Read it — tweak it if needed.
 
-**Step 2 → Build (Claude)**
-Open Claude. Paste the prompt you got from ChatGPT. Claude generates your app as an artifact. Click the **three dots** on the artifact → **Download** → save as `my-app.html`.
+**Step 2 → Get your Claude prompt (ChatGPT — Prompt 2)**
+Happy with the PRD? Copy **Prompt 2** from [`prompt-template.md`](prompt-template.md) and paste it into the same ChatGPT conversation. It will output a ready-to-use Claude prompt, optimised for the free plan.
 
-**Step 3 → Run (Your Laptop)**
+**Step 3 → Build (Claude)**
+Open Claude. Paste the prompt you just got. Claude generates your app as an artifact. Click the **three dots** on the artifact → **Download** → save as `my-app.html`.
+
+**Step 4 → Run (Your Laptop)**
 Double-click the HTML file. Your app opens in your browser. Locally. Offline. Yours.
 
-**Step 4 → Iterate**
+**Step 5 → Iterate**
 Want changes? Tell Claude what to fix. Download again. Open the new file.
+
+---
+
+## ⭐ Bonus — Put Your App Online
+
+These steps are optional — your app already works without them. But if you want a real live URL to share with people, here's how.
+
+**Bonus Step 1 → Create a GitHub account**
+Sign up free at [github.com](https://github.com). Then create a new repository (click **+** → **New repository**). Give it a name, set it to Public, and hit **Create repository**.
+
+**Bonus Step 2 → Upload your HTML file**
+On your new repo page, click **Add file → Upload files**. Drag your `my-app.html` file in, **rename it `index.html`**, then click **Commit changes**.
+
+**Bonus Step 3 → Enable GitHub Pages**
+Go to your repo → **Settings → Pages**. Under *Source*, select **Deploy from a branch**, pick **main** and **/ (root)**, then hit **Save**. Wait about a minute — your app will be live at `https://yourusername.github.io/your-repo-name`.
 
 ---
 
